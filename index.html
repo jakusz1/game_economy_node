@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
 <head>
-    <title>Socket.IO chat</title>
+    <title>GEcon</title>
     <style>
         * {
             margin: 0;
@@ -61,7 +61,7 @@
 <header>no data</header>
 <panel>
     <form action="">
-        <input id="m" autocomplete="off"/>
+        <input id="m" autocomplete="off" type="number"/>
         <button id="plus">+</button>
         <button id="minus">-</button>
         <button id="send">Send</button>
@@ -73,7 +73,7 @@
 <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
 <script>
     var user = window.prompt("Enter your name:", "");
-    document.title = 'Game balance: ' + user;
+    document.title = 'GEcon: ' + user;
 
     $(function () {
         var socket = io();
@@ -81,33 +81,35 @@
 
         socket.on('output', function (data) {
             if (data.length) {
-                for (var x = 0; x < data.length; x++) {
-                    $('#userslist').append($('<option>', {value: data[i], text: data[i]}));
+                for (var i = 0; i < data.length; i++) {
+                    $('#userslist').append($('<option>', {value: data[i].user, text: data[i].user}));
                 }
             }
         });
         socket.on('new user', function (data) {
             $('#userslist').append($('<option>', {value: data.user, text: data.user}));
         });
+        socket.on('to ' + user, function (data) {
+            $('header').val(data.balance);
+        });
 
         $('#plus').on('click', function () {
             socket.emit('balance change', {user: user, change: $('#m').val(), if_add: true});
-            console.log("something");
-            $('#m').val('');
+            console.log("plus clicked");
+            //$('#m').val('');
             return false;
         });
         $('#minus').on('click', function () {
             socket.emit('balance change', {user: user, change: $('#m').val(), if_add: false});
 
-            console.log("something2");
-            $('#m').val('');
+            console.log("minus clicked");
+            //$('#m').val('');
             return false;
         });
         $('#send').on('click', function () {
-            socket.emit('transfer', {user_minus: user, user_plus: "test", message: $('#m').val()});
-
-            console.log("something3");
-            $('#m').val('');
+            socket.emit('transfer', {user_minus: user, user_plus: $('#userslist').find(":selected").text(), change: parseInt($('#m').val())});
+            console.log("transfer clicked");
+            //$('#m').val('');
             return false;
         });
     });

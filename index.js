@@ -16,12 +16,12 @@ mongo.connect('mongodb://127.0.0.1/test', function(err, db){
 			if(err) throw err;
 			socket.emit('output', res);
 		});
-		
+
 		socket.on('user joined', function (data) {
-            if(!col.find({user: data.user}).limit(1)){
+            //if(!col.findOne({user: data.user})){
                 col.insertOne({user: data.user, balance: START_BALANCE});
                 socket.emit('new user',{user: data.user});
-            }
+            //}
         });
 
 		socket.on('balance change', function(data){
@@ -41,14 +41,13 @@ mongo.connect('mongodb://127.0.0.1/test', function(err, db){
 
             else {
                 if (if_add) {
-                    col.updateOne({user: data.user}, {$add: {balance: data.change}});
+                    col.updateOne({user: user}, {$inc: {balance: change}});
                 }
                 else{
-                    col.updateOne({user: data.user}, {$subtract: {balance: data.change}});
+                    col.updateOne({user: user}, {$inc: {balance: -change}});
                 }
-                io.emit('to ' + data.user, {
-                    change: data.change,
-                    add: if_add
+                io.emit('to ' + user, {
+                    balance: col.findOne({user: user},{balance: 1})
                 });
             }
         }
