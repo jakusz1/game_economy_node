@@ -1,70 +1,116 @@
 <!doctype html>
 <html>
 <head>
-  <title>Socket.IO chat</title>
-  <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font: 13px Helvetica, Arial; }
-  header { font-size: 100px; text-align: center; vertical-align: middle; margin-top: 100px;  }
-  form { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
-  form input { border: 0; padding: 10px; width: 70%; margin-right: .5%; }
-  form button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
-  #messages { list-style-type: none; margin: 0; padding: 0; }
-  #messages li { padding: 5px 10px; }
-  #messages li:nth-child(odd) { background: #eee; }
-</style>
+    <title>Socket.IO chat</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font: 13px Helvetica, Arial;
+        }
+
+        header {
+            font-size: 100px;
+            text-align: center;
+            vertical-align: middle;
+            margin-top: 100px;
+        }
+
+        form {
+            background: #000;
+            padding: 3px;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+
+        form input {
+            border: 0;
+            padding: 10px;
+            width: 70%;
+            margin-right: .5%;
+        }
+
+        form button {
+            width: 9%;
+            background: rgb(130, 224, 255);
+            border: none;
+            padding: 10px;
+        }
+
+        #messages {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        #messages li {
+            padding: 5px 10px;
+        }
+
+        #messages li:nth-child(odd) {
+            background: #eee;
+        }
+    </style>
 </head>
 <body>
-  <header>no data</header>
-  <panel>
+<header>no data</header>
+<panel>
     <form action="">
-      <input id="m" autocomplete="off"/>
-      <button id="plus">+</button>
-      <button id="minus">-</button>
-      <button id="send">Send</button>
+        <input id="m" autocomplete="off"/>
+        <button id="plus">+</button>
+        <button id="minus">-</button>
+        <button id="send">Send</button>
     </form>
     <select id="userslist">
     </select>
-  </panel>
-  <script src="/socket.io/socket.io.js"></script>
-  <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
-  <script>
-    var user = window.prompt("Enter your name:","");
+</panel>
+<script src="/socket.io/socket.io.js"></script>
+<script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+<script>
+    var user = window.prompt("Enter your name:", "");
     document.title = 'Game balance: ' + user;
 
     $(function () {
-      var socket = io();
+        var socket = io();
+        socket.emit('user joined', {user: user});
 
-      socket.on('output', function(data){
-       if(data.length) {
-        for(var x=0; x < data.length; x++){
-          $('#userslist').append($('<option>', { value: data[i], text: data[i] }));
-        }
-      }
+        socket.on('output', function (data) {
+            if (data.length) {
+                for (var x = 0; x < data.length; x++) {
+                    $('#userslist').append($('<option>', {value: data[i], text: data[i]}));
+                }
+            }
+        });
+        socket.on('new user', function (data) {
+            $('#userslist').append($('<option>', {value: data.user, text: data.user}));
+        });
+
+        $('#plus').on('click', function () {
+            socket.emit('balance change', {user: user, change: $('#m').val(), if_add: true});
+            console.log("something");
+            $('#m').val('');
+            return false;
+        });
+        $('#minus').on('click', function () {
+            socket.emit('balance change', {user: user, change: $('#m').val(), if_add: false});
+
+            console.log("something2");
+            $('#m').val('');
+            return false;
+        });
+        $('#send').on('click', function () {
+            socket.emit('transfer', {user_minus: user, user_plus: "test", message: $('#m').val()});
+
+            console.log("something3");
+            $('#m').val('');
+            return false;
+        });
     });
-
-
-      $('#plus').on('click',function(){
-        socket.emit('plus change', { user: user, change: $('#m').val() });
-        console.log("something");
-        $('#m').val('');
-        return false;
-      });
-      $('#minus').on('click',function(){
-        socket.emit('minus change', { user: user, change: $('#m').val() });
-        
-        console.log("something2");
-        $('#m').val('');
-        return false;
-      });
-      $('#send').on('click',function(){
-        socket.emit('transfer', { user_minus: user, user_plus: "test", message: $('#m').val() });
-        
-        console.log("something3");
-        $('#m').val('');
-        return false;
-      });
-    });
-  </script>
+</script>
 </body>
 </html>
