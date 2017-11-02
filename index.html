@@ -89,18 +89,19 @@
         socket.on('new user', function (data) {
             $('#userslist').append($('<option>', {value: data.user, text: data.user}));
         });
-        socket.on('to ' + user, function (data) {
-            $('header').val(data.balance);
+        socket.on('update: '+user, function (data) {
+            console.log("update poszedł");
+            $('header').text(data.balance+'k');
         });
 
         $('#plus').on('click', function () {
-            socket.emit('balance change', {user: user, change: $('#m').val(), if_add: true});
+            socket.emit('balance change', {user: user, change: parseInt($('#m').val()), if_add: true});
             console.log("plus clicked");
             //$('#m').val('');
             return false;
         });
         $('#minus').on('click', function () {
-            socket.emit('balance change', {user: user, change: $('#m').val(), if_add: false});
+            socket.emit('balance change', {user: user, change: parseInt($('#m').val()), if_add: false});
 
             console.log("minus clicked");
             //$('#m').val('');
