@@ -7,7 +7,7 @@ const START_BALANCE = 15000;
 
 
 io.sockets.on('connection', function (socket) {
-    console.log("Socket connected.");
+    //console.log("Socket connected.");
     mongo.connect('mongodb://127.0.0.1/test', function (err, db) {
         if (err) throw err;
         var col = db.collection('users');
@@ -24,7 +24,11 @@ io.sockets.on('connection', function (socket) {
             var col = db.collection('users');
             col.insertOne({user: data.user, balance: START_BALANCE}, function (err) {
                 if (!err) {
-                    io.emit('new user', {user: data.user});
+                    io.emit('output', [{user: data.user}]);
+                    console.log("new user " + data.user + " joined");
+                }
+                else {
+                    console.log("user " + data.user + " joined");
                 }
             });
             db.close();
@@ -44,10 +48,12 @@ io.sockets.on('connection', function (socket) {
 
     socket.on('balance change', function (data) {
         updateBalance(data.user, data.change, data.if_add);
+        console.log(data.user+" "+(data.if_add?"+":"-")+data.change);
     });
     socket.on('transfer', function (data) {
         updateBalance(data.user_minus, data.change, false);
         updateBalance(data.user_plus, data.change, true);
+        console.log(data.user_minus+" ---"+data.change+"--> "+data.user_plus);
     });
 
     function updateBalance(user, change, if_add) {

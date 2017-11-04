@@ -9,15 +9,11 @@
             box-sizing: border-box;
         }
 
-        body {
-            font: 13px Helvetica, Arial;
-        }
-
         header {
-            font-size: 100px;
+            font-size: 100pt;
             text-align: center;
             vertical-align: middle;
-            margin-top: 100px;
+            margin-top: 10%;
         }
 
         form {
@@ -58,8 +54,8 @@
     </style>
 </head>
 <body>
-<header>no data</header>
-<panel>
+<div id="data">no data</div>
+<div id="panel">
     <form action="">
         <input id="m" autocomplete="off" type="number"/>
         <button id="plus">+</button>
@@ -68,7 +64,7 @@
     </form>
     <select id="userslist">
     </select>
-</panel>
+</div>
 <script src="/socket.io/socket.io.js"></script>
 <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
 <script>
@@ -77,21 +73,18 @@
 
     $(function () {
         var socket = io();
-        socket.emit('user joined', {user: user});
+        socket.emit('user joined', {user: user===''?'no-name':user});
 
         socket.on('output', function (data) {
             if (data.length) {
                 for (var i = 0; i < data.length; i++) {
-                    $('#userslist').append($('<option>', {value: data[i].user, text: data[i].user}));
+                    if(data[i].user!==user){ $('#userslist').append($('<option>', {value: data[i].user, text: data[i].user}));}
                 }
             }
         });
-        socket.on('new user', function (data) {
-            $('#userslist').append($('<option>', {value: data.user, text: data.user}));
-        });
         socket.on('update: '+user, function (data) {
             console.log("update poszedł");
-            $('header').text(data.balance+'k');
+            $('#data').text(data.balance+'k');
         });
 
         $('#plus').on('click', function () {
