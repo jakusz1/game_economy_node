@@ -1,18 +1,20 @@
 <!doctype html>
 <html>
 <head>
+    <link rel="stylesheet" type="text/css" href="style.css">
     <title>GEcon</title>
-    <link type="text/css" href="style.css"/>
+    <meta name="viewport" content="initial-scale=1">
 </head>
 <body>
-<div id="data">no data</div>
+<div id="playername"></div>
+<div id="data"></div>
 <div id="panel">
     <form action="">
         <input id="m" autocomplete="off" type="number"/>
-        <button id="plus">+</button>
-        <button id="minus">-</button>
-        <button id="send">Send</button>
     </form>
+    <button id="plus">+</button>
+    <button id="minus">-</button>
+    <button id="send">Send</button>
     <select id="userslist">
     </select>
 </div>
@@ -20,11 +22,13 @@
 <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
 <script>
     var user = window.prompt("Enter your name:", "");
+    user = user===''?'no-name':user;
     document.title = 'GEcon: ' + user;
+    $('#playername').text(user+'\'s balance:');
 
     $(function () {
         var socket = io();
-        socket.emit('user joined', {user: user===''?'no-name':user});
+        socket.emit('user joined', {user: user});
 
         socket.on('output', function (data) {
             if (data.length) {

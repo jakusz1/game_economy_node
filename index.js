@@ -1,10 +1,12 @@
-var app = require('express')();
+var express = require('express'),app=express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var mongo = require('mongodb').MongoClient;
+var path = require('path');
 
 const START_BALANCE = 15000;
 
+app.use(express.static(path.join(__dirname, '/public')));
 
 io.sockets.on('connection', function (socket) {
     //console.log("Socket connected.");
@@ -92,6 +94,7 @@ io.sockets.on('connection', function (socket) {
 app.get('/', function (req, res) {
     res.sendFile(__dirname + '/index.html');
 });
+
 
 
 // io.on('connection', function(socket){
