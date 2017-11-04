@@ -117,7 +117,7 @@ process.stdin.setEncoding('utf8');
 process.stdin.on('data', function (text) {
     var words = text.match(/[^\s]+/g);
     switch(words[0]) {
-        case 'exit':
+        case 'quit':
             done();
             break;
         case 'drop':
