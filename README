@@ -1,1 +1,8 @@
-Test repo
+Game Economy
+
+Node.js app for transactions in board games.
+
+Server commands:
+drop - removes all players data
+remove <username> - removes particular player
+quit
