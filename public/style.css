@@ -1,8 +1,48 @@
-*{
-    background-color: black;
+*
+{
+    font-family: sans-serif;
+    margin: 0;
 }
+
+#playername
+{
+    background-color: #4b4b4b;
+    padding: 2vw;
+}
+#user
+{
+    font-size: 8vw;
+    color: white;
+}
+
 #data
 {
+    font-size: 20vw;
+    text-align: right;
+    margin-right: 1vw;
+}
+#m
+{
+    font-size: 6vw;
+    text-align: right;
+    width: 60%;
     vertical-align: middle;
-    font-size: large;
+}
+#panel
+{
+    width: 100%;
+    margin-bottom: 2vw;
+
+}
+#panel button
+{
+    padding: 1vw;
+    width: 18%;
+    float: right;
+}
+
+button, select
+{
+    font-size: 4vw;
+    vertical-align: middle;
 }

@@ -6,15 +6,15 @@
     <meta name="viewport" content="initial-scale=1">
 </head>
 <body>
-<div id="playername"></div>
+<div id="playername"><p id="user"></p></div>
 <div id="data"></div>
 <div id="panel">
-    <form action="">
-        <input id="m" autocomplete="off" type="number"/>
-    </form>
+    <input id="m" autocomplete="off" type="number"/>
     <button id="plus">+</button>
     <button id="minus">-</button>
-    <button id="send">Send</button>
+</div>
+<div id="panel2">
+    <button id="send">Send to:</button>
     <select id="userslist">
     </select>
 </div>
@@ -22,9 +22,9 @@
 <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
 <script>
     var user = window.prompt("Enter your name:", "");
-    user = user===''?'no-name':user;
+    user = user === '' ? 'no-name' : user;
     document.title = 'GEcon: ' + user;
-    $('#playername').text(user+'\'s balance:');
+    $('#user').text(user + '\'s balance:');
 
     $(function () {
         var socket = io();
@@ -33,13 +33,15 @@
         socket.on('output', function (data) {
             if (data.length) {
                 for (var i = 0; i < data.length; i++) {
-                    if(data[i].user!==user){ $('#userslist').append($('<option>', {value: data[i].user, text: data[i].user}));}
+                    if (data[i].user !== user) {
+                        $('#userslist').append($('<option>', {value: data[i].user, text: data[i].user}));
+                    }
                 }
             }
         });
-        socket.on('update: '+user, function (data) {
+        socket.on('update: ' + user, function (data) {
             console.log("update poszedł");
-            $('#data').text(data.balance+'k');
+            $('#data').text(data.balance + 'k');
         });
 
         $('#plus').on('click', function () {
@@ -55,8 +57,13 @@
             //$('#m').val('');
             return false;
         });
+
         $('#send').on('click', function () {
-            socket.emit('transfer', {user_minus: user, user_plus: $('#userslist').find(":selected").text(), change: parseInt($('#m').val())});
+            socket.emit('transfer', {
+                user_minus: user,
+                user_plus: $('#userslist').find(":selected").text(),
+                change: parseInt($('#m').val())
+            });
             console.log("transfer clicked");
             //$('#m').val('');
             return false;
