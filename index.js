@@ -51,42 +51,36 @@ io.sockets.on('connection', function (socket) {
     });
 
     function updateBalance(user, change, if_add) {
-        // var whitespacePattern = /^\s*$/;
-        //
-        // if (whitespacePattern.test(user) || whitespacePattern.test(change)) {
-        //     socket.emit('er', "Wartość i nazwa użytkownika nie może być pusta.");
-        // }
-        //
-        // else {
-        mongo.connect('mongodb://127.0.0.1/test', function (err, db) {
-            if (err) throw err;
-            var col = db.collection('users');
-            if (if_add) {
-                col.updateOne({user: user}, {$inc: {balance: change}});
-            }
-            else {
-                col.updateOne({user: user}, {$inc: {balance: -change}});
-            }
-            db.close();
-        });
-        mongo.connect('mongodb://127.0.0.1/test', function (err, db) {
-            if (err) throw err;
-            var col = db.collection('users');
-            col.findOne({user: user}, function (err, result) {
-                if (err) throw err;
-                io.emit('update: ' + user, {
-                    balance: result.balance
-                });
-            });
-            db.close();
-        });
 
-        //}
+        if (change!==null) {
+            mongo.connect('mongodb://127.0.0.1/test', function (err, db) {
+                if (err) throw err;
+                var col = db.collection('users');
+                if (if_add) {
+                    col.updateOne({user: user}, {$inc: {balance: change}});
+                }
+                else {
+                    col.updateOne({user: user}, {$inc: {balance: -change}});
+                }
+                db.close();
+            });
+            mongo.connect('mongodb://127.0.0.1/test', function (err, db) {
+                if (err) throw err;
+                var col = db.collection('users');
+                col.findOne({user: user}, function (err, result) {
+                    if (err) throw err;
+                    io.emit('update: ' + user, {
+                        balance: result.balance
+                    });
+                });
+                db.close();
+            });
+
+        }
     }
 
 
 });
-
 
 
 app.get('/', function (req, res) {
