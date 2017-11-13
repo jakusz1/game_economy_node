@@ -124,8 +124,11 @@ process.stdin.on('data', function (text) {
             drop();
             break;
         case 'remove':
-            if(words[1]!==null){remove(words[1]);}
+            if(words[1]){remove(words[1]);}
             break;
+        case 'list':
+        	list();
+        	break;
         default:
     }
 });
@@ -160,6 +163,17 @@ function remove(user) {
         col.removeOne({user: user}, function (err) {
             if (err) throw err;
             console.log(">"+user+" was removed");
+        });
+        db.close();
+    });
+}
+function list(){
+	mongo.connect('mongodb://127.0.0.1/test', function (err, db) {
+        if (err) throw err;
+        var col = db.collection('users');
+        col.find().toArray(function (err, res) {
+            if (err) throw err;
+            console.log(res);
         });
         db.close();
     });
