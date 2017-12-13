@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <title>GEcon screen</title>
+</head>
+<body>
+<div id="playername"><p id="user">all scores:</p></div>
+<table id="datatable">
+    <tr>
+        <th>Name</th>
+        <th>Balance</th>
+    </tr>
+
+</table>
+<script src="/socket.io/socket.io.js"></script>
+<script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+<script>
+    $(function () {
+        var socket = io();
+
+        socket.on('output', function (data) {
+            if (data.length) {
+                for (var i = 0; i < data.length; i++) {
+                    $('#datatable').append($('<tr id="data_'+ data[i].user +'">')
+                            .append($('<td>')
+                                .text(data[i].user)
+                            )
+                            .append($('<td>')
+                                .text(data[i].balance)
+                            )
+                        );
+                }
+            }
+        });
+        socket.on('simple update', function (data) {
+            var field = $("#data_"+data.user+" td:nth-child(2)");
+            var old_value = field.text();
+            console.log(old_value);
+            field.text(data.balance).css('color',(data.balance<old_value?'red':'green'));//.delay(10000).css('color','black');
+        });
+    });
+</script>
+</body>
+</html>

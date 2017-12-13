@@ -46,3 +46,13 @@ button, select
     font-size: 4vw;
     vertical-align: middle;
 }
+
+#datatable
+{
+    padding: 10px;
+    width: 100%;
+}
+#datatable tr td:nth-child(2)
+{
+    text-align: right;
+}

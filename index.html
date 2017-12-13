@@ -39,9 +39,12 @@
                 }
             }
         });
-        socket.on('update: ' + user, function (data) {
-            console.log("update poszedł");
-            $('#data').text(data.balance + 'k');
+        socket.on('simple update', function (data) {
+            if(data.user===user) {
+                console.log("update poszedł");
+                $('#data').text(data.balance + 'k').addClass("");
+                $()
+            }
         });
 
         $('#plus').on('click', function () {
