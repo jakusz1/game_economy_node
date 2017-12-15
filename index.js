@@ -20,27 +20,30 @@ mongo.connect('mongodb://127.0.0.1/test', function (err, db) {
             socket.emit('output', res);
         });
         socket.on('user joined', function (data) {
-            col.insertOne({user: data.user, balance: START_BALANCE}, function (err) {
-                if (!err) {
+            col.findOne({user: data.user}, function (err, result) {
+                if (result!==null) {
+                    socket.emit('simple update', {
+                        user: result.user,
+                        balance: result.balance
+                    });
+                    console.log("user " + data.user + " joined");
+                }
+                else {
+                    col.insertOne({user: data.user, balance: START_BALANCE});
+                    socket.emit('simple update', {
+                        user: data.user,
+                        balance: START_BALANCE
+                    });
                     io.emit('output', [{user: data.user}]);
                     console.log("new user " + data.user + " joined");
                 }
-                else {
-                    console.log("user " + data.user + " joined");
-                }
             });
-            col.findOne({user: data.user}, function (err, result) {
-                if (err) throw err;
-                socket.emit('simple update', {
-                    user: result.user,
-                    balance: result.balance
-                });
-            });
+
         });
         socket.on('balance change', function (data) {
             if (data.change !== null) {
                 updateBalance(data.user, data.change);
-                console.log(data.user + " " + (data.change>0 ? "+" : "") + data.change);
+                console.log(data.user + " " + (data.change > 0 ? "+" : "") + data.change);
             }
         });
         socket.on('transfer', function (data) {
@@ -50,14 +53,16 @@ mongo.connect('mongodb://127.0.0.1/test', function (err, db) {
                 console.log(data.user_minus + " ---" + data.change + "--> " + data.user_plus);
             }
         });
+
         function updateBalance(user, change) {
-            col.findOneAndUpdate({user: user},{$inc: {balance: change}}, function (mongoError, p2) {
+            col.findOneAndUpdate({user: user}, {$inc: {balance: change}}, function (err, result) {
                 io.emit('simple update', {
                     user: user,
-                    balance: p2.value.balance+change
+                    balance: result.value.balance + change
                 });
             });
         }
+
         socket.on('disconnect', function () {
             console.log('Got disconnect!');
         });
