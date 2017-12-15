@@ -43,18 +43,17 @@
             if(data.user===user) {
                 console.log("update poszedł");
                 $('#data').text(data.balance + 'k').addClass("");
-                $()
             }
         });
 
         $('#plus').on('click', function () {
-            socket.emit('balance change', {user: user, change: parseInt($('#m').val()), if_add: true});
+            socket.emit('balance change', {user: user, change: parseInt($('#m').val())});
             console.log("plus clicked");
             //$('#m').val('');
             return false;
         });
         $('#minus').on('click', function () {
-            socket.emit('balance change', {user: user, change: parseInt($('#m').val()), if_add: false});
+            socket.emit('balance change', {user: user, change: -parseInt($('#m').val())});
 
             console.log("minus clicked");
             //$('#m').val('');

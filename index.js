@@ -8,22 +8,18 @@ const START_BALANCE = 15000;
 
 app.use(express.static(path.join(__dirname, '/public')));
 
-io.sockets.on('connection', function (socket) {
-    //console.log("Socket connected.");
-    mongo.connect('mongodb://127.0.0.1/test', function (err, db) {
-        if (err) throw err;
-        var col = db.collection('users');
+mongo.connect('mongodb://127.0.0.1/test', function (err, db) {
+    console.log("connected to database");
+    if (err) throw err;
+    var col = db.collection('users');
+
+    io.sockets.on('connection', function (socket) {
+        console.log("Socket connected.");
         col.find().toArray(function (err, res) {
             if (err) throw err;
             socket.emit('output', res);
         });
-        db.close();
-    });
-
-    socket.on('user joined', function (data) {
-        mongo.connect('mongodb://127.0.0.1/test', function (err, db) {
-            if (err) throw err;
-            var col = db.collection('users');
+        socket.on('user joined', function (data) {
             col.insertOne({user: data.user, balance: START_BALANCE}, function (err) {
                 if (!err) {
                     io.emit('output', [{user: data.user}]);
@@ -40,59 +36,33 @@ io.sockets.on('connection', function (socket) {
                     balance: result.balance
                 });
             });
-            db.close();
         });
-    });
-
-    socket.on('balance change', function (data) {
-        if (data.change !== null) {
-            updateBalance(data.user, data.change, data.if_add);
-            console.log(data.user + " " + (data.if_add ? "+" : "-") + data.change);
-        }
-    });
-    socket.on('transfer', function (data) {
-        if (data.change !== null) {
-            updateBalance(data.user_minus, data.change, false);
-            updateBalance(data.user_plus, data.change, true);
-            console.log(data.user_minus + " ---" + data.change + "--> " + data.user_plus);
-        }
-    });
-
-    function updateBalance(user, change, if_add) {
-        var temp;
-
-        mongo.connect('mongodb://127.0.0.1/test', function (err, db) {
-            if (err) throw err;
-            var col = db.collection('users');
-            col.findOne({user: user}, function (err, result) {
-                if (err) throw err;
-                temp = result.balance;
-            });
-
-            if (if_add) {
-                col.updateOne({user: user}, {$inc: {balance: change}});
+        socket.on('balance change', function (data) {
+            if (data.change !== null) {
+                updateBalance(data.user, data.change);
+                console.log(data.user + " " + (data.change>0 ? "+" : "") + data.change);
             }
-            else {
-                col.updateOne({user: user}, {$inc: {balance: -change}});
+        });
+        socket.on('transfer', function (data) {
+            if (data.change !== null) {
+                updateBalance(data.user_minus, -data.change);
+                updateBalance(data.user_plus, data.change);
+                console.log(data.user_minus + " ---" + data.change + "--> " + data.user_plus);
             }
-
-            col.findOne({user: user}, function (err, result) {
-                if (err) throw err;
+        });
+        function updateBalance(user, change) {
+            col.findOneAndUpdate({user: user},{$inc: {balance: change}}, function (mongoError, p2) {
                 io.emit('simple update', {
-                    user: result.user,
-                    balance: result.balance
+                    user: user,
+                    balance: p2.value.balance+change
                 });
-
             });
-            db.close();
+        }
+        socket.on('disconnect', function () {
+            console.log('Got disconnect!');
         });
-
-    }
-
-
-})
-;
-
+    });
+});
 
 app.get('/', function (req, res) {
     res.sendFile(__dirname + '/index.html');
@@ -100,12 +70,6 @@ app.get('/', function (req, res) {
 app.get('/screen', function (req, res) {
     res.sendFile(__dirname + '/screen.html');
 });
-
-// io.on('connection', function(socket){
-// 	socket.on('chat message', function(msg,user){
-// 		io.emit('chat message', msg, user);
-// 	});
-// });
 
 http.listen(3000, function () {
     console.log('listening on *:3000');
@@ -117,7 +81,7 @@ process.stdin.setEncoding('utf8');
 
 process.stdin.on('data', function (text) {
     var words = text.match(/[^\s]+/g);
-    switch(words[0]) {
+    switch (words[0]) {
         case 'quit':
             done();
             break;
@@ -125,11 +89,13 @@ process.stdin.on('data', function (text) {
             drop();
             break;
         case 'remove':
-            if(words[1]){remove(words[1]);}
+            if (words[1]) {
+                remove(words[1]);
+            }
             break;
         case 'list':
-        	list();
-        	break;
+            list();
+            break;
         default:
     }
 });
@@ -138,6 +104,7 @@ function done() {
     console.log('>bye');
     process.exit();
 }
+
 function drop() {
     mongo.connect('mongodb://127.0.0.1/test', function (err, db) {
         if (err) throw err;
@@ -150,26 +117,28 @@ function drop() {
     mongo.connect('mongodb://127.0.0.1/test', function (err, db) {
         if (err) throw err;
         var col = db.collection('users');
-        col.createIndex({user: 1},{unique: true}, function (err) {
+        col.createIndex({user: 1}, {unique: true}, function (err) {
             if (err) throw err;
         });
         db.close();
     });
     console.log(">all users removed");
 }
+
 function remove(user) {
     mongo.connect('mongodb://127.0.0.1/test', function (err, db) {
         if (err) throw err;
         var col = db.collection('users');
         col.removeOne({user: user}, function (err) {
             if (err) throw err;
-            console.log(">"+user+" was removed");
+            console.log(">" + user + " was removed");
         });
         db.close();
     });
 }
-function list(){
-	mongo.connect('mongodb://127.0.0.1/test', function (err, db) {
+
+function list() {
+    mongo.connect('mongodb://127.0.0.1/test', function (err, db) {
         if (err) throw err;
         var col = db.collection('users');
         col.find().toArray(function (err, res) {
